@@ -19,10 +19,6 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index/index.html")
 }
 
-/*func imgHandler(w http.ResponseWriter, r *http.Request) {
-	http.StripPrefix("/img/", http.FileServer(http.Dir("./index")))
-}*/
-
 func aboutHandler(w http.ResponseWriter, r *http.Request) {
 	data := "Ухади"
 	tmpl, _ := template.ParseFiles("index/about.html")
@@ -37,7 +33,7 @@ func callAt(hour, min, sec int, f func()) error {
 		for {
 			f()
 			logger.Info("TIMER -- SLEEP")
-			time.Sleep(time.Minute * 1)
+			time.Sleep(time.Hour * 10)
 		}
 	}()
 

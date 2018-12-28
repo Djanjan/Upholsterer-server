@@ -37,14 +37,46 @@ func GetsDB(isNULL bool) ([]Image, error) {
 			continue
 		}
 		imgs = append(imgs, p.toImage())
-		/*if isNULL {
-			imgs = append(imgs, p.toImage())
-		} else {
-			if p.OriginPath.Valid && p.IconPath.Valid {
-				imgs = append(imgs, p.toImage())
-			}
-		}*/
 
+	}
+
+	return imgs, err
+}
+
+func GetsCountDB(isNULL bool, count int) ([]Image, error) {
+	db, err := sql.Open("sqlite3", "imagedb.db")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	var rows *sql.Rows
+	if isNULL {
+		rows, err = db.Query("select * from Images")
+	} else {
+		rows, err = db.Query("select * from Images where iconPath <> '' and iconPath is not null and originPath <> '' and originPath is not null ")
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+	imgs := []Image{}
+
+	thisCurect := count
+	for rows.Next() {
+		p := ImageNil{}
+		err := rows.Scan(&p.ID, &p.Url, &p.Catalog, &p.OriginPath, &p.IconPath)
+		if err != nil {
+			logger.Error(err.Error())
+			continue
+		}
+		imgs = append(imgs, p.toImage())
+
+		thisCurect--
+		if thisCurect <= 0 {
+			break
+		}
 	}
 
 	return imgs, err

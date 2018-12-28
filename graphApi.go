@@ -28,7 +28,7 @@ var queryType = graphql.NewObject(
 		Name: "Query",
 		Fields: graphql.Fields{
 			/* Получение продукта по ID
-			   http://localhost:8080/imagess?query={image(id:1){url,catalog}}
+			   /api/v1/images?query={image(id:1){url,catalog}}
 			*/
 			"image": &graphql.Field{
 				Type:        imageType,
@@ -48,7 +48,7 @@ var queryType = graphql.NewObject(
 				},
 			},
 			/*
-			   http://localhost:8080/imagess?query={images(Catalog:"city"){url,catalog}}
+			   /api/v1/images?query={images(Catalog:"city"){url,catalog}}
 			*/
 			"images": &graphql.Field{
 				Type:        graphql.NewList(imageType),
@@ -74,14 +74,25 @@ var queryType = graphql.NewObject(
 				},
 			},
 			/* Получение списка продуктов
-			   http://localhost:8080/imagess?query={list{url,catalog}}
+			   /api/v1/images?query={list(count:10){url,catalog}}
 			*/
 			"list": &graphql.Field{
 				Type:        graphql.NewList(imageType),
 				Description: "Get Images list",
+				Args: graphql.FieldConfigArgument{
+					"count": &graphql.ArgumentConfig{
+						Type: graphql.Int,
+					},
+				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					imgs, _ := GetsDB(false)
-					return imgs, nil
+					count, countOk := params.Args["count"].(int)
+					if !countOk {
+						imgs, _ := GetsDB(false)
+						return imgs, nil
+					} else {
+						imgs, _ := GetsCountDB(false, count)
+						return imgs, nil
+					}
 				},
 			},
 		},
@@ -91,7 +102,7 @@ var mutationType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Mutation",
 	Fields: graphql.Fields{
 		/*
-		   http://localhost:8080/product?query=mutation+_{create(id:asd123,Url:adad){url,catalog}}
+		  /api/v1/images?query=mutation+_{create(id:asd123,Url:adad){url,catalog}}
 		*/
 		"create": &graphql.Field{
 			Type:        imageType,
@@ -125,7 +136,7 @@ var mutationType = graphql.NewObject(graphql.ObjectConfig{
 		},
 
 		/*
-		   http://localhost:8080/product?query=mutation+_{update(Id:1,Url:195){url,catalog}}
+		   /api/v1/images?query=mutation+_{update(Id:1,Url:195){url,catalog}}
 		*/
 		"update": &graphql.Field{
 			Type:        imageType,
@@ -166,9 +177,9 @@ var mutationType = graphql.NewObject(graphql.ObjectConfig{
 		},
 
 		/*
-		   http://localhost:8080/product?query=mutation+_{delete(id:1){url,catalog}}
-		   http://localhost:8080/product?query=mutation+_{delete(Url:asdas12){url,catalog}}
-		   http://localhost:8080/product?query=mutation+_{delete(All:true){url,catalog}}
+		   /api/v1/images?query=mutation+_{delete(id:1){url,catalog}}
+		   /api/v1/images?query=mutation+_{delete(Url:asdas12){url,catalog}}
+		   /api/v1/images?query=mutation+_{delete(All:true){url,catalog}}
 		*/
 		"delete": &graphql.Field{
 			Type:        imageType,

@@ -75,6 +75,10 @@ func createImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	go func() {
+		planner_check()
+	}()
+
 	json.NewEncoder(w).Encode(http.StatusOK)
 }
 
